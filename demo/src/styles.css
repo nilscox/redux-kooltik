@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card {
+    width: 700px;
+    height: 400px;
+  }
+}
+
+@layer utilities {
+  .row {
+    @apply flex flex-row;
+  }
+
+  .col {
+    @apply flex flex-col;
+  }
+}

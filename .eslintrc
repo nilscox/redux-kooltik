@@ -1,0 +1,25 @@
+{
+  "parser": "@typescript-eslint/parser",
+
+  "plugins": ["@typescript-eslint", "import"],
+
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+
+  "rules": {
+    "no-console": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "import/no-cycle": "error",
+    "import/order": [
+      "warn",
+      {
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc" },
+        "groups": ["builtin", "external", "unknown", "internal", "parent", "sibling", "index"]
+      }
+    ]
+  }
+}
