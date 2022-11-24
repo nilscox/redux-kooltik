@@ -34,7 +34,7 @@ describe('NormalizationSelectors', () => {
   });
 
   it('creates a selector performing entity denormalization', () => {
-    const selectUser = normalizationSelectors.createEntitySelector<User>(userSchema);
+    const selectUser = normalizationSelectors.createEntitySelector<User>('user', userSchema);
 
     expect(selectUser(state, '1')).toEqual({
       id: '1',

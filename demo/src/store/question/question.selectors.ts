@@ -13,7 +13,7 @@ export class QuestionSelectors extends EntitySelectors<AppState, NormalizedQuest
     super('question', (state) => state.questions);
   }
 
-  selectQuestion = normalizationSelectors.createEntitySelector<Question>(questionSchema);
+  selectQuestion = normalizationSelectors.createEntitySelector<Question>('question', questionSchema);
 
   selectText = this.entityPropertySelector('text');
 

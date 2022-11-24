@@ -86,7 +86,7 @@ describe('normalization', () => {
       super('post', (state: AppState) => state.post);
     }
 
-    selectPost = normalizationSelectors.createEntitySelector(postSchema);
+    selectPost = normalizationSelectors.createEntitySelector('post', postSchema);
     selectPosts = normalizationSelectors.createEntitiesSelector(postSchema);
   }
 
@@ -95,7 +95,7 @@ describe('normalization', () => {
       super('user', (state: AppState) => state.user);
     }
 
-    selectUser = normalizationSelectors.createEntitySelector(userSchema);
+    selectUser = normalizationSelectors.createEntitySelector('user', userSchema);
     selectUsers = normalizationSelectors.createEntitiesSelector(userSchema);
   }
 

@@ -2,15 +2,29 @@ import { Selector } from './actions';
 import { EntitiesState } from './entity-adapter';
 import { Selectors } from './selectors';
 
-interface SafeEntitySelector<RootState, Entity> {
-  (state: RootState, entityId: string): Entity;
-  unsafe(state: RootState, entityId: string): Entity | undefined;
+export interface SafeSelector<Params extends unknown[], Result> {
+  (...params: Params): Result;
+  unsafe(...params: Params): Result | undefined;
 }
 
-interface SafeEntityPropertySelector<RootState, Entity, Property extends keyof Entity> {
-  (state: RootState, entityId: string): Entity[Property];
-  unsafe(state: RootState, entityId: string): Entity[Property] | undefined;
-}
+export const createSafeSelector = <Params extends unknown[], Result>(
+  getError: (...params: Params) => Error,
+  unsafe: SafeSelector<Params, Result>['unsafe']
+) => {
+  const selector: SafeSelector<Params, Result> = (...params) => {
+    const value = unsafe(...params);
+
+    if (!value) {
+      throw getError(...params);
+    }
+
+    return value;
+  };
+
+  selector.unsafe = unsafe;
+
+  return selector;
+};
 
 export class EntitySelectors<RootState, Entity> extends Selectors<RootState, EntitiesState<Entity>> {
   constructor(
@@ -29,40 +43,20 @@ export class EntitySelectors<RootState, Entity> extends Selectors<RootState, Ent
   }
 
   entitySelector() {
-    const selector: SafeEntitySelector<RootState, Entity> = (state, entityId) => {
-      const entity = this.selectState(state).entities[entityId];
-
-      if (!entity) {
-        throw new Error(`${this.name} with id "${entityId}" does not exist`);
-      }
-
-      return entity;
-    };
-
-    selector.unsafe = (state: RootState, entityId: string) => {
-      return this.selectState(state).entities[entityId];
-    };
-
-    return selector;
+    return createSafeSelector<[RootState, string], Entity>(
+      (state, entityId) => new Error(`${this.name} with id "${entityId}" does not exist`),
+      (state, entityId) => this.selectState(state).entities[entityId]
+    );
   }
 
   entityPropertySelector<Property extends keyof Entity>(property: Property) {
-    const selector: SafeEntityPropertySelector<RootState, Entity, Property> = (state, entityId) => {
-      const entity = this.selectState(state).entities[entityId];
-
-      if (!entity) {
-        throw new Error(
-          `${this.name} with id "${entityId}" does not exist (selecting property "${String(property)}")`
-        );
-      }
-
-      return entity[property];
+    const message = (entityId: string) => {
+      return `${this.name} with id "${entityId}" does not exist (selecting property "${String(property)}")`;
     };
 
-    selector.unsafe = (state: RootState, entityId: string) => {
-      return this.selectState(state).entities[entityId]?.[property];
-    };
-
-    return selector;
+    return createSafeSelector<[RootState, string], Entity[Property]>(
+      (state, entityId) => new Error(message(entityId)),
+      (state, entityId) => this.selectState(state).entities[entityId]?.[property]
+    );
   }
 }

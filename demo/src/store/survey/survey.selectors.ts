@@ -15,7 +15,7 @@ class SurveySelectors extends EntitySelectors<AppState, NormalizedSurvey> {
     super('survey', (state) => state.surveys);
   }
 
-  selectSurvey = normalizationSelectors.createEntitySelector<Survey>(surveySchema);
+  selectSurvey = normalizationSelectors.createEntitySelector<Survey>('survey', surveySchema);
 
   selectTotalSteps = createSelector(this.selectSurvey, (survey) => survey.steps.length);
 
