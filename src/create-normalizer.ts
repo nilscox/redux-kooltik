@@ -9,12 +9,8 @@ export type Normalized<T, K extends keyof T = never> = Omit<T, K> & {
 
 const normalizedSymbol = Symbol('normalized');
 
-type NormalizationContext = {
-  [normalizedSymbol]: Record<string, unknown>;
-};
-
 export const createNormalizer = <Entity, NormalizedEntity>(name: string, schema: Schema) => {
-  return function (this: NormalizationContext, entity: Entity) {
+  return function (this: Record<PropertyKey, unknown>, entity: Entity): NormalizedEntity {
     const { entities, result } = normalize(entity, schema);
 
     this[normalizedSymbol] = entities;
