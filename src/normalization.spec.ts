@@ -5,7 +5,9 @@ import { combineReducers } from 'redux';
 import { createNormalizer, Normalized } from './create-normalizer';
 import { EntityActions } from './entity-actions';
 import { EntityAdapter } from './entity-adapter';
-import { createNormalizationMiddleware, createNormalizedEntitySelectors } from './normalization';
+import { EntitySelectors } from './entity-selectors';
+import { createNormalizationMiddleware } from './normalization-middleware';
+import { NormalizationSelectors } from './normalization-selectors';
 import { createTestStore } from './test-store';
 
 describe('normalization', () => {
@@ -74,31 +76,27 @@ describe('normalization', () => {
 
   type AppState = ReturnType<typeof rootReducer>;
 
-  const NormalizedEntitySelectors = createNormalizedEntitySelectors((state: AppState) => ({
+  const normalizationSelectors = new NormalizationSelectors((state: AppState) => ({
     user: state.user.entities,
     post: state.post.entities,
   }));
 
-  class PostSelectors extends NormalizedEntitySelectors<Post, NormalizedPost> {
-    protected schema = postSchema;
-
+  class PostSelectors extends EntitySelectors<AppState, NormalizedPost> {
     constructor() {
       super('post', (state: AppState) => state.post);
     }
 
-    selectPost = this.selectEntity;
-    selectPosts = this.selectEntities;
+    selectPost = normalizationSelectors.createEntitySelector(postSchema);
+    selectPosts = normalizationSelectors.createEntitiesSelector(postSchema);
   }
 
-  class UserSelectors extends NormalizedEntitySelectors<User, NormalizedUser> {
-    protected schema = userSchema;
-
+  class UserSelectors extends EntitySelectors<AppState, NormalizedUser> {
     constructor() {
       super('user', (state: AppState) => state.user);
     }
 
-    selectUser = this.selectEntity;
-    selectUsers = this.selectEntities;
+    selectUser = normalizationSelectors.createEntitySelector(userSchema);
+    selectUsers = normalizationSelectors.createEntitiesSelector(userSchema);
   }
 
   const postSelectors = new PostSelectors();

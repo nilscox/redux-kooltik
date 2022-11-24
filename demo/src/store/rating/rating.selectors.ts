@@ -1,15 +1,16 @@
 import { createSelector } from 'reselect';
+import { EntitySelectors } from 'tmp';
 
-import { NormalizedEntitySelectors, ratingSchema } from '../normalization';
+import { ratingSchema } from '../normalization';
 import { AppState } from '../store';
 
-import { NormalizedRating, Rating } from './rating.actions';
+import { NormalizedRating } from './rating.actions';
 
-class RatingSelectors extends NormalizedEntitySelectors<Rating, NormalizedRating> {
+class RatingSelectors extends EntitySelectors<AppState, NormalizedRating> {
   protected schema = ratingSchema;
 
   constructor() {
-    super('rating', (state: AppState) => state.ratings);
+    super('rating', (state) => state.ratings);
   }
 
   selectText = this.entityPropertySelector('text');

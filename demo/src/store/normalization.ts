@@ -1,5 +1,5 @@
 import { schema } from 'normalizr';
-import { createNormalizedEntitySelectors, createNormalizer, EntitiesState } from 'tmp';
+import { createNormalizer, EntitiesState, NormalizationSelectors } from 'tmp';
 
 import type { Answer, NormalizedAnswer } from './answer/answer.actions';
 import type { Content, NormalizedContent } from './content/content.actions';
@@ -45,13 +45,11 @@ const asEntitiesState = <T>(id: string, value: T): EntitiesState<T> => ({
   entities: { [id]: value },
 });
 
-export const selectNormalizedEntities = (state: AppState) => ({
+export const normalizationSelectors = new NormalizationSelectors<AppState>((state) => ({
   answer: state.answers.entities,
   content: state.contents.entities,
   question: state.questions.entities,
   rating: state.ratings.entities,
   survey: state.surveys.entities,
   user: asEntitiesState(state.user.name, state.user),
-});
-
-export const NormalizedEntitySelectors = createNormalizedEntitySelectors(selectNormalizedEntities);
+}));

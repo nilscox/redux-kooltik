@@ -1,18 +1,19 @@
 import { createSelector } from 'reselect';
+import { EntitySelectors } from 'tmp';
 
-import { NormalizedEntitySelectors, questionSchema } from '../normalization';
+import { normalizationSelectors, questionSchema } from '../normalization';
 import { AppState } from '../store';
 
 import { NormalizedQuestion, Question } from './question.actions';
 
-export class QuestionSelectors extends NormalizedEntitySelectors<Question, NormalizedQuestion> {
+export class QuestionSelectors extends EntitySelectors<AppState, NormalizedQuestion> {
   protected schema = questionSchema;
 
   constructor() {
-    super('question', (state: AppState) => state.questions);
+    super('question', (state) => state.questions);
   }
 
-  selectQuestion = this.selectEntity;
+  selectQuestion = normalizationSelectors.createEntitySelector<Question>(questionSchema);
 
   selectText = this.entityPropertySelector('text');
 

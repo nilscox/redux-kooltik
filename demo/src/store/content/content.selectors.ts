@@ -1,13 +1,15 @@
-import { contentSchema, NormalizedEntitySelectors } from '../normalization';
+import { EntitySelectors } from 'tmp';
+
+import { contentSchema } from '../normalization';
 import { AppState } from '../store';
 
-import { Content, NormalizedContent } from './content.actions';
+import { NormalizedContent } from './content.actions';
 
-class ContentSelectors extends NormalizedEntitySelectors<Content, NormalizedContent> {
+class ContentSelectors extends EntitySelectors<AppState, NormalizedContent> {
   protected schema = contentSchema;
 
   constructor() {
-    super('content', (state: AppState) => state.contents);
+    super('content', (state) => state.contents);
   }
 
   selectText = this.entityPropertySelector('text');

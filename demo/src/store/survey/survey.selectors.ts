@@ -1,20 +1,21 @@
 import { createSelector } from 'reselect';
 
-import { NormalizedEntitySelectors, surveySchema } from '../normalization';
+import { EntitySelectors } from '../../../../src';
+import { normalizationSelectors, surveySchema } from '../normalization';
 import { questionSelectors } from '../question/question.selectors';
 import { ratingSelectors } from '../rating/rating.selectors';
 import { AppState } from '../store';
 
 import { NormalizedSurvey, Survey, SurveyStep } from './survey.actions';
 
-class SurveySelectors extends NormalizedEntitySelectors<Survey, NormalizedSurvey> {
+class SurveySelectors extends EntitySelectors<AppState, NormalizedSurvey> {
   protected schema = surveySchema;
 
   constructor() {
-    super('survey', (state: AppState) => state.surveys);
+    super('survey', (state) => state.surveys);
   }
 
-  selectSurvey = this.selectEntity;
+  selectSurvey = normalizationSelectors.createEntitySelector<Survey>(surveySchema);
 
   selectTotalSteps = createSelector(this.selectSurvey, (survey) => survey.steps.length);
 
