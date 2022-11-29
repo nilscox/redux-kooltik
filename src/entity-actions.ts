@@ -1,4 +1,4 @@
-import { ImmerReducer, PayloadAction, Actions } from './actions';
+import { PayloadImmerReducer, PayloadAction, Actions, ImmerReducer, Action } from './actions';
 import { EntitiesState, EntityAdapter } from './entity-adapter';
 
 export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
@@ -12,22 +12,27 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     super(name, EntityAdapter.initialState(initialExtraProperties) as T);
   }
 
+  protected entityAction(
+    type: string,
+    reducer: ImmerReducer<Entity>
+  ): (entityId: string) => Action<{ entityId: string }>;
+
   protected entityAction<Payload>(
     type: string,
-    reducer: ImmerReducer<Entity, Payload>
+    reducer: PayloadImmerReducer<Entity, Payload>
   ): (entityId: string, payload: Payload) => PayloadAction<Payload, { entityId: string }>;
 
   protected entityAction<Payload, TransformedPayload>(
     type: string,
     transformer: (payload: Payload) => TransformedPayload,
-    reducer: ImmerReducer<Entity, TransformedPayload>
+    reducer: PayloadImmerReducer<Entity, TransformedPayload>
   ): (entityId: string, payload: Payload) => PayloadAction<TransformedPayload, { entityId: string }>;
 
   protected entityAction(type: string, arg1: unknown, arg2?: unknown) {
     const [reducer, transformer] =
       arg2 === undefined
-        ? [arg1 as ImmerReducer<Entity, unknown>, (payload: unknown) => payload]
-        : [arg2 as ImmerReducer<Entity, unknown>, arg1 as (payload: unknown) => unknown];
+        ? [arg1 as PayloadImmerReducer<Entity, unknown>, (payload: unknown) => payload]
+        : [arg2 as PayloadImmerReducer<Entity, unknown>, arg1 as (payload: unknown) => unknown];
 
     const actionsName = this.name;
 
@@ -51,7 +56,7 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
       }
     );
 
-    return (entityId: string, payload: unknown) => {
+    return (entityId: string, payload?: unknown) => {
       return { ...action(payload), entityId };
     };
   }
@@ -60,7 +65,7 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     property: Property,
     type = `set-${String(property)}`
   ) {
-    return this.entityAction(type, (entity, value: Entity[Property]) => {
+    return this.entityAction(type, (entity: Entity, value: Entity[Property]) => {
       entity[property] = value;
     });
   }
