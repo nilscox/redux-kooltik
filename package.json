@@ -1,6 +1,6 @@
 {
   "name": "@nilscox/redux-kooltik",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "Beerware",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
   "mocha": {
     "spec": "src/**/*.spec.ts",
     "extension": "ts",
-    "watch": "src",
+    "watchFiles": "src",
     "require": [
       "esbuild-register"
     ]
