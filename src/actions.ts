@@ -1,15 +1,24 @@
 import produce from 'immer';
 import { Reducer } from 'redux';
 
-export type Action = { type: string };
-export type PayloadAction<Payload, Extra = unknown> = Action & { payload: Payload } & Extra;
+export type Action<Extra = unknown> = { type: string } & Extra;
+export type PayloadAction<Payload, Extra = unknown> = Action<Extra> & { payload: Payload };
 
-export interface ActionCreator<Payload, TransformedPayload = Payload, Extra = unknown> {
+export interface ActionCreator<Extra = unknown> {
+  (): Action<Extra>;
+  type: string;
+}
+
+export interface PayloadActionCreator<Payload, TransformedPayload = Payload, Extra = unknown> {
   (payload: Payload): PayloadAction<TransformedPayload, Extra>;
   type: string;
 }
 
-export interface ImmerReducer<State, Payload, This = unknown> {
+export interface ImmerReducer<State, This = unknown> {
+  (this: This, state: State): void | State;
+}
+
+export interface PayloadImmerReducer<State, Payload, This = unknown> {
   (this: This, state: State, payload: Payload): void | State;
 }
 
@@ -19,10 +28,10 @@ export interface Selector<State, Params extends unknown[], Result> {
 
 export class Actions<State> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private actions = new Map<string, ImmerReducer<State, any>>();
+  private actions = new Map<string, PayloadImmerReducer<State, any>>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private subscriptions = new Map<string, ImmerReducer<State, any>>();
+  private subscriptions = new Map<string, PayloadImmerReducer<State, any>>();
 
   constructor(public readonly name: string, private readonly initialState: State) {}
 
@@ -30,22 +39,27 @@ export class Actions<State> {
     return `${this.name}/${type}`;
   }
 
+  protected action<Extra = unknown>(
+    type: string,
+    reducer: ImmerReducer<State, Action<Extra>>
+  ): ActionCreator<Extra>;
+
   protected action<Payload, Extra = unknown>(
     type: string,
-    reducer: ImmerReducer<State, Payload, PayloadAction<Payload, Extra>>
-  ): ActionCreator<Payload, Payload, Extra>;
+    reducer: PayloadImmerReducer<State, Payload, PayloadAction<Payload, Extra>>
+  ): PayloadActionCreator<Payload, Payload, Extra>;
 
   protected action<Payload, TransformedPayload, Extra = unknown>(
     type: string,
     transformer: (this: Extra, payload: Payload) => TransformedPayload,
-    reducer: ImmerReducer<State, TransformedPayload, PayloadAction<Payload, Extra>>
-  ): ActionCreator<Payload, TransformedPayload, Extra>;
+    reducer: PayloadImmerReducer<State, TransformedPayload, PayloadAction<Payload, Extra>>
+  ): PayloadActionCreator<Payload, TransformedPayload, Extra>;
 
   protected action(type: string, arg1: unknown, arg2?: unknown) {
     const [reducer, transformer] =
       arg2 === undefined
-        ? [arg1 as ImmerReducer<State, unknown>, (payload: unknown) => payload]
-        : [arg2 as ImmerReducer<State, unknown>, arg1 as (payload: unknown) => unknown];
+        ? [arg1 as PayloadImmerReducer<State, unknown>, (payload: unknown) => payload]
+        : [arg2 as PayloadImmerReducer<State, unknown>, arg1 as (payload: unknown) => unknown];
 
     const actionType = this.actionType(type);
 
@@ -55,7 +69,7 @@ export class Actions<State> {
 
     this.actions.set(actionType, reducer);
 
-    const actionCreator: ActionCreator<unknown> = (payload) => {
+    const actionCreator: PayloadActionCreator<unknown> = (payload) => {
       const extra = {};
       const transformedPayload = transformer.call(extra, payload);
 
@@ -72,7 +86,7 @@ export class Actions<State> {
   }
 
   protected setState(type = 'set') {
-    return this.action(type, (_, value: State) => value);
+    return this.action(type, (state: State, value: State) => value);
   }
 
   protected createSetter<Property extends keyof State>(property: Property, type = `set-${String(property)}`) {
@@ -81,9 +95,11 @@ export class Actions<State> {
     });
   }
 
+  // propertyAction
+
   protected subscribe<Payload>(
-    actionCreator: ActionCreator<Payload>,
-    reducer: ImmerReducer<State, Partial<Payload>>
+    actionCreator: PayloadActionCreator<Payload>,
+    reducer: PayloadImmerReducer<State, Partial<Payload>>
   ) {
     if (this.subscriptions.has(actionCreator.type)) {
       throw new Error(`subscription to "${actionCreator.type}" already exists in actions "${this.name}"`);

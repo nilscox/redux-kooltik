@@ -19,11 +19,15 @@ class UserActions extends Actions<User> {
     super('user', { name: '', age: 0 });
   }
 
-  setName = this.action('set-name', (user, name: string) => {
+  setName = this.action('set-name', (user: User, name: string) => {
     user.name = name;
   });
 
   setAge = this.createSetter('age');
+
+  happyBirthday = this.action('happy-birthday', (user) => {
+    user.age++;
+  });
 
   setNameUppercase = this.action(
     'set-name-uppercase',
@@ -56,6 +60,10 @@ describe('Actions', () => {
 
   it('creates an action', () => {
     expect(userActions.setName('tom')).toEqual({ type: 'user/set-name', payload: 'tom' });
+  });
+
+  it('creates an action without payload', () => {
+    expect(userActions.happyBirthday()).toEqual({ type: 'user/happy-birthday' });
   });
 
   it('creates an action using the setProperty helper', () => {
