@@ -3,10 +3,13 @@ import { EntitiesState } from './entity-adapter';
 import { createSafeSelector } from './safe-selector';
 import { Selectors } from './selectors';
 
-export class EntitySelectors<RootState, Entity> extends Selectors<RootState, EntitiesState<Entity>> {
+export class EntitySelectors<RootState, Entity, ExtraProperties = unknown> extends Selectors<
+  RootState,
+  EntitiesState<Entity, ExtraProperties>
+> {
   constructor(
     protected readonly name: string,
-    protected readonly selectState: Selector<RootState, [], EntitiesState<Entity>>
+    protected readonly selectState: Selector<RootState, [], EntitiesState<Entity, ExtraProperties>>
   ) {
     super(selectState);
   }
