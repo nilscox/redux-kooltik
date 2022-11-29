@@ -8,14 +8,20 @@ type User = {
   age?: number;
 };
 
-type State = {
-  users: EntitiesState<User>;
+type UserMeta = {
+  fetching: boolean;
 };
 
-class UserSelectors extends EntitySelectors<State, User> {
+type State = {
+  users: EntitiesState<User, UserMeta>;
+};
+
+class UserSelectors extends EntitySelectors<State, User, UserMeta> {
   constructor() {
     super('user', (state: State) => state.users);
   }
+
+  selectIsFetching = this.propertySelector('fetching');
 
   selectUsers = this.entitiesSelector();
   selectUserIds = this.idsSelector();
@@ -32,7 +38,7 @@ describe('EntitySelectors', () => {
 
   beforeEach(() => {
     userSelectors = new UserSelectors();
-    state = { users: EntityAdapter.initialState() };
+    state = { users: EntityAdapter.initialState({ fetching: false }) };
     user = { name: 'tom', age: 22 };
     state.users.entities['tom'] = user;
     state.users.ids = ['tom'];
@@ -88,5 +94,9 @@ describe('EntitySelectors', () => {
 
   it('returns undefined when the entity does not exist', () => {
     expect(userSelectors.selectName.unsafe(state, 'jeanne')).toBe(undefined);
+  });
+
+  it('selects an extra property', () => {
+    expect(userSelectors.selectIsFetching(state)).toBe(false);
   });
 });

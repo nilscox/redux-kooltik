@@ -1,15 +1,21 @@
-export type EntitiesState<Entity> = {
+export type EntitiesState<Entity, ExtraProperties = unknown> = {
   ids: string[];
   entities: Record<string, Entity | undefined>;
-};
+} & ExtraProperties;
 
 export class EntityAdapter<Entity> {
   constructor(private readonly selectId: (entity: Entity) => string) {}
 
-  static initialState<Entity>(): EntitiesState<Entity> {
+  static initialState<Entity>(): EntitiesState<Entity, never>;
+  static initialState<Entity, ExtraProperties>(
+    extra: ExtraProperties
+  ): EntitiesState<Entity, ExtraProperties>;
+
+  static initialState(extra?: unknown) {
     return {
       entities: {},
       ids: [],
+      ...(extra ?? {}),
     };
   }
 

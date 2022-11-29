@@ -1,9 +1,15 @@
 import { ImmerReducer, PayloadAction, Actions } from './actions';
 import { EntitiesState, EntityAdapter } from './entity-adapter';
 
-export class EntityActions<Entity> extends Actions<EntitiesState<Entity>> {
-  constructor(name: string) {
-    super(name, EntityAdapter.initialState());
+export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
+  EntitiesState<Entity, ExtraProperties extends undefined ? unknown : ExtraProperties>
+> {
+  constructor(
+    name: string,
+    ...[initialExtraProperties]: ExtraProperties extends undefined ? [] : [ExtraProperties]
+  ) {
+    type T = EntitiesState<Entity, ExtraProperties extends undefined ? unknown : ExtraProperties>;
+    super(name, EntityAdapter.initialState(initialExtraProperties) as T);
   }
 
   protected entityAction<Payload>(

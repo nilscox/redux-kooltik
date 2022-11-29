@@ -12,20 +12,26 @@ type User = {
   age: number;
 };
 
-class UserActions extends EntityActions<User> {
+type UserMeta = {
+  fetching: boolean;
+};
+
+class UserActions extends EntityActions<User, UserMeta> {
   private adapter = new EntityAdapter<User>((user) => user.id);
 
   constructor() {
-    super('user');
+    super('user', { fetching: false });
   }
 
   setUser = this.action('set-user', this.adapter.setOne);
 
-  setName = this.entityAction('set-name', (user, name: string) => {
+  setName = this.entityAction('set-name', (user: User, name: string) => {
     user.name = name;
   });
 
   setAge = this.setEntityProperty('age');
+
+  setFetching = this.createSetter('fetching');
 }
 
 describe('EntityActions', () => {
@@ -49,6 +55,32 @@ describe('EntityActions', () => {
       entityId: '1',
       payload: 22,
     });
+  });
+
+  it('creates an action on an extra property', () => {
+    expect(userActions.setFetching(true)).toEqual({
+      type: 'user/set-fetching',
+      payload: true,
+    });
+  });
+
+  it('initial extra properties typings ', () => {
+    class WithoutExtraProperties extends EntityActions<User> {
+      constructor() {
+        // @ts-expect-error unexpected initial properties
+        super('user', { fetching: false });
+      }
+    }
+
+    class WithExtraProperties extends EntityActions<User, UserMeta> {
+      constructor() {
+        // @ts-expect-error missing initial properties
+        super('user');
+      }
+    }
+
+    WithoutExtraProperties;
+    WithExtraProperties;
   });
 
   it('dispatches and selects using a redux store', () => {
