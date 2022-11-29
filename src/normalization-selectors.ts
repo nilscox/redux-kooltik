@@ -1,6 +1,6 @@
 import { denormalize, Schema } from 'normalizr';
 
-import { createSafeSelector } from './entity-selectors';
+import { createSafeSelector } from './safe-selector';
 
 export class NormalizationSelectors<RootState> {
   constructor(private readonly selectNormalizedEntities: (state: RootState) => unknown) {}

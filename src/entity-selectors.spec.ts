@@ -5,7 +5,7 @@ import { EntitySelectors } from './entity-selectors';
 
 type User = {
   name: string;
-  age: number;
+  age?: number;
 };
 
 type State = {
@@ -22,6 +22,7 @@ class UserSelectors extends EntitySelectors<State, User> {
 
   selectUser = this.entitySelector();
   selectName = this.entityPropertySelector('name');
+  selectAge = this.entityPropertySelector('age');
 }
 
 describe('EntitySelectors', () => {
@@ -69,7 +70,15 @@ describe('EntitySelectors', () => {
 
   it('throws when the entity does not exist', () => {
     expect(() => userSelectors.selectName(state, 'jeanne')).toThrow(
-      new Error('user with id "jeanne" does not exist (selecting property "name")')
+      new Error('user with id "jeanne" does not exist')
+    );
+  });
+
+  it("throws when the entity's property does not exist", () => {
+    delete user.age;
+
+    expect(() => userSelectors.selectAge(state, 'tom')).toThrow(
+      new Error('user with id "tom" does not have property "age"')
     );
   });
 
