@@ -98,6 +98,6 @@ describe('EntityAdapter', () => {
       ids: [],
     };
 
-    expect(userEntityAdapter.selectMany(state, ['1', '2'])).toEqual([tom, undefined]);
+    expect(userEntityAdapter.selectMany(state, ['1', '2'])).toEqual([tom]);
   });
 });

@@ -1,6 +1,6 @@
 export type EntitiesState<Entity, ExtraProperties = unknown> = {
   ids: string[];
-  entities: Record<string, Entity | undefined>;
+  entities: Record<string, Entity>;
 } & ExtraProperties;
 
 export class EntityAdapter<Entity> {
@@ -51,11 +51,13 @@ export class EntityAdapter<Entity> {
     this.addIds(state, entities);
   };
 
-  selectOne = ({ entities }: EntitiesState<Entity>, entityId: string) => {
+  selectOne = ({ entities }: EntitiesState<Entity>, entityId: string): Entity | undefined => {
     return entities[entityId];
   };
 
-  selectMany = (state: EntitiesState<Entity>, entityIds: string[]) => {
-    return entityIds.map((entityId) => this.selectOne(state, entityId));
+  selectMany = (state: EntitiesState<Entity>, entityIds: string[]): Entity[] => {
+    return entityIds
+      .map((entityId) => this.selectOne(state, entityId))
+      .filter((entity): entity is Entity => Boolean(entity));
   };
 }
