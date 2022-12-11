@@ -9,7 +9,7 @@ export interface ActionCreator<Extra = unknown> {
   type: string;
 }
 
-export interface PayloadActionCreator<Payload, TransformedPayload = Payload, Extra = unknown> {
+export interface PayloadActionCreator<Payload, Extra = unknown, TransformedPayload = Payload> {
   (payload: Payload): PayloadAction<TransformedPayload, Extra>;
   type: string;
 }
@@ -33,7 +33,7 @@ export class Actions<State> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private subscriptions = new Map<string, PayloadImmerReducer<State, any>>();
 
-  constructor(public readonly name: string, private readonly initialState: State) {}
+  constructor(protected readonly name: string, private readonly initialState: State) {}
 
   private actionType(type: string) {
     return `${this.name}/${type}`;
@@ -47,13 +47,13 @@ export class Actions<State> {
   protected action<Payload, Extra = unknown>(
     type: string,
     reducer: PayloadImmerReducer<State, Payload, PayloadAction<Payload, Extra>>
-  ): PayloadActionCreator<Payload, Payload, Extra>;
+  ): PayloadActionCreator<Payload, Extra>;
 
   protected action<Payload, TransformedPayload, Extra = unknown>(
     type: string,
     transformer: (this: Extra, payload: Payload) => TransformedPayload,
     reducer: PayloadImmerReducer<State, TransformedPayload, PayloadAction<Payload, Extra>>
-  ): PayloadActionCreator<Payload, TransformedPayload, Extra>;
+  ): PayloadActionCreator<Payload, Extra, TransformedPayload>;
 
   protected action(type: string, arg1: unknown, arg2?: unknown) {
     const [reducer, transformer] =
@@ -85,21 +85,50 @@ export class Actions<State> {
     return actionCreator;
   }
 
-  protected setState(type = 'set') {
-    return this.action(type, (state: State, value: State) => value);
-  }
+  protected propertyAction<Property extends keyof State>(
+    property: Property,
+    type: string,
+    reducer: ImmerReducer<State[Property]>
+  ): ActionCreator;
 
-  protected createSetter<Property extends keyof State>(property: Property, type = `set-${String(property)}`) {
-    return this.action(type, (state: State, value: State[Property]) => {
-      state[property] = value;
+  protected propertyAction<Property extends keyof State, Payload>(
+    property: Property,
+    type: string,
+    reducer: PayloadImmerReducer<State[Property], Payload>
+  ): PayloadActionCreator<Payload>;
+
+  protected propertyAction<Property extends keyof State, Payload>(
+    property: Property,
+    type: string,
+    reducer: ImmerReducer<State[Property]> | PayloadImmerReducer<State[Property], Payload>
+  ): ActionCreator | PayloadActionCreator<Payload> {
+    return this.action(type, (state: State, payload: Payload) => {
+      const result = reducer(state[property], payload);
+
+      if (result !== undefined) {
+        state[property] = result;
+      }
     });
   }
 
-  // propertyAction
+  protected set(type = 'set') {
+    return this.action(type, (_state: State, value: State) => value);
+  }
+
+  protected setProperty<Property extends keyof State>(property: Property, type = `set-${String(property)}`) {
+    return this.propertyAction(property, type, (_: State[Property], value: State[Property]) => value);
+  }
+
+  protected subscribe(actionCreator: ActionCreator, reducer: ImmerReducer<State>): void;
 
   protected subscribe<Payload>(
     actionCreator: PayloadActionCreator<Payload>,
     reducer: PayloadImmerReducer<State, Partial<Payload>>
+  ): void;
+
+  protected subscribe<Payload>(
+    actionCreator: ActionCreator<Payload> | PayloadActionCreator<Payload>,
+    reducer: ImmerReducer<State> | PayloadImmerReducer<State, Partial<Payload>>
   ) {
     if (this.subscriptions.has(actionCreator.type)) {
       throw new Error(`subscription to "${actionCreator.type}" already exists in actions "${this.name}"`);
@@ -113,12 +142,12 @@ export class Actions<State> {
       const subscription = this.subscriptions.get(action.type);
       const reducer = this.actions.get(action.type);
 
-      if (subscription) {
-        state = produce(state, (state: State) => subscription(state, action.payload));
-      }
-
       if (reducer) {
         state = produce(state, (state: State) => reducer.call(action, state, action.payload));
+      }
+
+      if (subscription) {
+        state = produce(state, (state: State) => subscription(state, action.payload));
       }
 
       return state;

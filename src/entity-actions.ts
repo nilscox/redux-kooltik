@@ -1,5 +1,19 @@
-import { PayloadImmerReducer, PayloadAction, Actions, ImmerReducer, Action } from './actions';
+import {
+  PayloadImmerReducer,
+  PayloadAction,
+  Actions,
+  ImmerReducer,
+  Action,
+  PayloadActionCreator,
+} from './actions';
 import { EntitiesState, EntityAdapter } from './entity-adapter';
+
+type EntityActionCreator = (id: string) => Action<{ entityId: string }>;
+
+type PayloadEntityActionCreator<Payload, TransformedPayload = Payload> = (
+  id: string,
+  payload: Payload
+) => PayloadAction<TransformedPayload, { entityId: string }>;
 
 export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
   EntitiesState<Entity, ExtraProperties extends undefined ? unknown : ExtraProperties>
@@ -12,21 +26,18 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     super(name, EntityAdapter.initialState(initialExtraProperties) as T);
   }
 
-  protected entityAction(
-    type: string,
-    reducer: ImmerReducer<Entity>
-  ): (entityId: string) => Action<{ entityId: string }>;
+  protected entityAction(type: string, reducer: ImmerReducer<Entity>): EntityActionCreator;
 
   protected entityAction<Payload>(
     type: string,
     reducer: PayloadImmerReducer<Entity, Payload>
-  ): (entityId: string, payload: Payload) => PayloadAction<Payload, { entityId: string }>;
+  ): PayloadEntityActionCreator<Payload>;
 
   protected entityAction<Payload, TransformedPayload>(
     type: string,
     transformer: (payload: Payload) => TransformedPayload,
     reducer: PayloadImmerReducer<Entity, TransformedPayload>
-  ): (entityId: string, payload: Payload) => PayloadAction<TransformedPayload, { entityId: string }>;
+  ): PayloadEntityActionCreator<Payload, TransformedPayload>;
 
   protected entityAction(type: string, arg1: unknown, arg2?: unknown) {
     const [reducer, transformer] =
@@ -64,9 +75,20 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
   protected setEntityProperty<Property extends keyof Entity>(
     property: Property,
     type = `set-${String(property)}`
-  ) {
+  ): PayloadEntityActionCreator<Entity[Property]> {
     return this.entityAction(type, (entity: Entity, value: Entity[Property]) => {
       entity[property] = value;
+    });
+  }
+
+  protected setEntitiesProperty<Property extends keyof Entity>(
+    property: Property,
+    type = `set-all-${String(property)}`
+  ): PayloadActionCreator<Entity[Property]> {
+    return this.action(type, (state: EntitiesState<Entity>, value: Entity[Property]) => {
+      Object.values(state.entities).forEach((entity) => {
+        entity[property] = value;
+      });
     });
   }
 }

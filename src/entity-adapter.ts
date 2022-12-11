@@ -6,7 +6,8 @@ export type EntitiesState<Entity, ExtraProperties = unknown> = {
 export class EntityAdapter<Entity> {
   constructor(private readonly selectId: (entity: Entity) => string) {}
 
-  static initialState<Entity>(): EntitiesState<Entity, never>;
+  static initialState<Entity>(): EntitiesState<Entity, unknown>;
+
   static initialState<Entity, ExtraProperties>(
     extra: ExtraProperties
   ): EntitiesState<Entity, ExtraProperties>;
