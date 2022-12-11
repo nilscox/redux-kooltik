@@ -1,58 +1,52 @@
 import { createSelector } from 'reselect';
 
-import { EntitySelectors } from '../../../../src';
 import { normalizationSelectors, surveySchema } from '../normalization';
 import { questionSelectors } from '../question/question.selectors';
 import { ratingSelectors } from '../rating/rating.selectors';
 import { AppState } from '../store';
 
-import { NormalizedSurvey, Survey, SurveyStep } from './survey.actions';
+import { Survey, SurveyStep } from './survey.actions';
 
-class SurveySelectors extends EntitySelectors<AppState, NormalizedSurvey> {
-  protected schema = surveySchema;
+const byId = normalizationSelectors.createEntitySelector<Survey>('survey', surveySchema);
 
-  constructor() {
-    super('survey', (state) => state.surveys);
-  }
+const stepIndex = createSelector([byId, (state, entityId, stepId: string) => stepId], (survey, stepId) =>
+  survey.steps.findIndex((step) => step.id === stepId)
+);
 
-  selectSurvey = normalizationSelectors.createEntitySelector<Survey>('survey', surveySchema);
+const totalSteps = createSelector(byId, (survey) => survey.steps.length);
 
-  selectTotalSteps = createSelector(this.selectSurvey, (survey) => survey.steps.length);
+const step = createSelector([byId, (state, id, stepId: string) => stepId], (survey, stepId) =>
+  survey.steps.find((step) => step.id === stepId)
+);
 
-  selectStep = createSelector([this.selectSurvey, (state, id, stepId: string) => stepId], (survey, stepId) =>
-    survey.steps.find((step) => step.id === stepId)
-  );
+const canGoPrevious = createSelector([byId, stepIndex], (survey, stepIndex) => stepIndex > 0);
 
-  selectStepIndex = createSelector(
-    [this.selectSurvey, (state, entityId, stepId: string) => stepId],
-    (survey, stepId) => survey.steps.findIndex((step) => step.id === stepId)
-  );
-
-  selectCanGoPrevious = createSelector(
-    [this.selectSurvey, this.selectStepIndex],
-    (survey, stepIndex) => stepIndex > 0
-  );
-
-  selectCanGoNext = createSelector(
-    [(state: AppState) => state, this.selectSurvey, this.selectStepIndex],
-    (state, survey, stepIndex) => {
-      if (stepIndex >= survey.steps.length - 1) {
-        return false;
-      }
-
-      const step = survey.steps[stepIndex];
-
-      if (step.type === SurveyStep.question && !questionSelectors.selectHasSelectedAnswer(state, step.id)) {
-        return false;
-      }
-
-      if (step.type === SurveyStep.rating && !ratingSelectors.selectHasValue(state, step.id)) {
-        return false;
-      }
-
-      return true;
+const canGoNext = createSelector(
+  [(state: AppState) => state, byId, stepIndex],
+  (state, survey, stepIndex) => {
+    if (stepIndex >= survey.steps.length - 1) {
+      return false;
     }
-  );
-}
 
-export const surveySelectors = new SurveySelectors();
+    const step = survey.steps[stepIndex];
+
+    if (step.type === SurveyStep.question && !questionSelectors.hasSelectedAnswer(state, step.id)) {
+      return false;
+    }
+
+    if (step.type === SurveyStep.rating && !ratingSelectors.hasValue(state, step.id)) {
+      return false;
+    }
+
+    return true;
+  }
+);
+
+export const surveySelectors = {
+  byId,
+  stepIndex,
+  totalSteps,
+  step,
+  canGoPrevious,
+  canGoNext,
+};

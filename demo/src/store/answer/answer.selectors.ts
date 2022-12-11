@@ -1,19 +1,12 @@
 import { EntitySelectors } from 'tmp';
 
-import { answerSchema } from '../normalization';
 import { AppState } from '../store';
 
 import { NormalizedAnswer } from './answer.actions';
 
-class AnswerSelectors extends EntitySelectors<AppState, NormalizedAnswer> {
-  protected schema = answerSchema;
+const selectors = new EntitySelectors<AppState, NormalizedAnswer>('answer', (state) => state.answers);
 
-  constructor() {
-    super('answer', (state) => state.answers);
-  }
-
-  selectText = this.entityPropertySelector('text');
-  selectIsSelected = this.entityPropertySelector('selected');
-}
-
-export const answerSelectors = new AnswerSelectors();
+export const answerSelectors = {
+  text: selectors.entityPropertySelector('text'),
+  isSelected: selectors.entityPropertySelector('selected'),
+};

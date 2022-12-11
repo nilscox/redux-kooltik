@@ -9,12 +9,12 @@ import {
 import thunk, { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { createNormalizationMiddleware } from 'tmp';
 
-import { answerActions } from './answer/answer.actions';
-import { contentActions } from './content/content.actions';
-import { questionActions } from './question/question.actions';
-import { ratingActions } from './rating/rating.actions';
-import { surveyActions } from './survey/survey.actions';
-import { userActions } from './user/user.actions';
+import { answerActions, answerReducer } from './answer/answer.actions';
+import { contentActions, contentReducer } from './content/content.actions';
+import { questionActions, questionReducer } from './question/question.actions';
+import { ratingActions, ratingReducer } from './rating/rating.actions';
+import { surveyActions, surveyReducer } from './survey/survey.actions';
+import { userReducer } from './user/user.actions';
 
 export const normalizationMiddleware = createNormalizationMiddleware({
   answer: answerActions.setAnswers,
@@ -25,12 +25,12 @@ export const normalizationMiddleware = createNormalizationMiddleware({
 });
 
 const rootReducer = combineReducers({
-  answers: answerActions.reducer(),
-  contents: contentActions.reducer(),
-  questions: questionActions.reducer(),
-  ratings: ratingActions.reducer(),
-  surveys: surveyActions.reducer(),
-  user: userActions.reducer(),
+  answers: answerReducer,
+  contents: contentReducer,
+  questions: questionReducer,
+  ratings: ratingReducer,
+  surveys: surveyReducer,
+  user: userReducer,
 });
 
 const thunkMiddleware = thunk;

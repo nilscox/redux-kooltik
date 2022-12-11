@@ -21,7 +21,7 @@ class UserSelectors extends EntitySelectors<State, User, UserMeta> {
     super('user', (state: State) => state.users);
   }
 
-  selectIsFetching = this.propertySelector('fetching');
+  selectIsFetching = this.property('fetching');
 
   selectUsers = this.entitiesSelector();
   selectUserIds = this.idsSelector();

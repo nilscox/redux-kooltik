@@ -29,24 +29,21 @@ export enum SurveyStep {
   rating = 'rating',
 }
 
-class SurveyActions extends EntityActions<NormalizedSurvey> {
-  private adapter = new EntityAdapter<NormalizedSurvey>((survey) => survey.id);
+const adapter = new EntityAdapter<NormalizedSurvey>((survey) => survey.id);
+const actions = new EntityActions<NormalizedSurvey>('survey');
 
-  constructor() {
-    super('survey');
-  }
+export const surveyActions = {
+  setSurveys: actions.action('set-surveys', adapter.setMany),
 
-  setSurveys = this.action('set-surveys', this.adapter.setMany);
+  addSurvey: actions.action('add-survey', normalizeSurvey, adapter.addId),
 
-  addSurvey = this.action('add-survey', normalizeSurvey, this.adapter.addId);
-
-  addStep = this.entityAction('add-step', normalizeStep, (survey, step: NormalizedStep) => {
+  addStep: actions.entityAction('add-step', normalizeStep, (survey, step: NormalizedStep) => {
     survey.steps.push({ id: step.id, schema: step.type });
-  });
+  }),
 
-  addSteps = this.entityAction('add-steps', normalizeSteps, (survey, steps: NormalizedStep[]) => {
+  addSteps: actions.entityAction('add-steps', normalizeSteps, (survey, steps: NormalizedStep[]) => {
     survey.steps.push(...steps.map((step) => ({ id: step.id, schema: step.type })));
-  });
-}
+  }),
+};
 
-export const surveyActions = new SurveyActions();
+export const surveyReducer = actions.reducer();

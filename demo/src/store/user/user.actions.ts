@@ -6,12 +6,10 @@ export type User = {
 
 export type NormalizedUser = Normalized<User>;
 
-class UserActions extends Actions<User> {
-  constructor() {
-    super('user', { name: '' });
-  }
+const actions = new Actions<User>('user', { name: '' });
 
-  setName = this.createSetter('name');
-}
+export const userActions = {
+  setName: actions.setProperty('name'),
+};
 
-export const userActions = new UserActions();
+export const userReducer = actions.reducer();

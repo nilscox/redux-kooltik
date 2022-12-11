@@ -19,7 +19,7 @@ describe('toggleAnswer', () => {
 
     store.dispatch(toggleAnswer(answer.id));
 
-    expect(store.select(answerSelectors.selectIsSelected, answer.id)).toBe(true);
+    expect(store.select(answerSelectors.isSelected, answer.id)).toBe(true);
   });
 
   it('unmarks an answer as selected', () => {
@@ -33,7 +33,7 @@ describe('toggleAnswer', () => {
 
     store.dispatch(toggleAnswer(answer.id));
 
-    expect(store.select(answerSelectors.selectIsSelected, answer.id)).toBe(false);
+    expect(store.select(answerSelectors.isSelected, answer.id)).toBe(false);
   });
 
   it('unselects the previously selected answer', () => {
@@ -47,6 +47,6 @@ describe('toggleAnswer', () => {
 
     store.dispatch(toggleAnswer(answer2.id));
 
-    expect(store.select(answerSelectors.selectIsSelected, answer1.id)).toBe(false);
+    expect(store.select(answerSelectors.isSelected, answer1.id)).toBe(false);
   });
 });

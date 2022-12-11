@@ -1,23 +1,21 @@
 import { createSelector } from 'reselect';
 import { EntitySelectors } from 'tmp';
 
-import { ratingSchema } from '../normalization';
 import { AppState } from '../store';
 
 import { NormalizedRating } from './rating.actions';
 
-class RatingSelectors extends EntitySelectors<AppState, NormalizedRating> {
-  protected schema = ratingSchema;
+const selectors = new EntitySelectors<AppState, NormalizedRating>('rating', (state) => state.ratings);
 
-  constructor() {
-    super('rating', (state) => state.ratings);
-  }
+const text = selectors.entityPropertySelector('text');
+const max = selectors.entityPropertySelector('max');
+const value = selectors.entityPropertySelector('value');
 
-  selectText = this.entityPropertySelector('text');
-  selectMax = this.entityPropertySelector('max');
-  selectValue = this.entityPropertySelector('value');
+const hasValue = createSelector(value.unsafe, (value) => value !== undefined);
 
-  selectHasValue = createSelector(this.selectValue, (value) => value !== undefined);
-}
-
-export const ratingSelectors = new RatingSelectors();
+export const ratingSelectors = {
+  text,
+  max,
+  value,
+  hasValue,
+};

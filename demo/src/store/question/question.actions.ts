@@ -25,25 +25,22 @@ export const createQuestion = (text: string, answers: Answer[]): Question => ({
   validated: false,
 });
 
-class QuestionActions extends EntityActions<NormalizedQuestion> {
-  private adapter = new EntityAdapter<NormalizedQuestion>((question) => question.id);
+const adapter = new EntityAdapter<NormalizedQuestion>((question) => question.id);
+const actions = new EntityActions<NormalizedQuestion>('question');
 
-  constructor() {
-    super('question');
-  }
+export const questionActions = {
+  setQuestions: actions.action('set-questions', adapter.setMany),
 
-  setQuestions = this.action('set-questions', this.adapter.setMany);
+  addQuestion: actions.action('add-question', normalizeQuestion, adapter.addId),
+  addQuestions: actions.action('add-questions', normalizeQuestions, adapter.addIds),
 
-  addQuestion = this.action('add-question', normalizeQuestion, this.adapter.addId);
-  addQuestions = this.action('add-questions', normalizeQuestions, this.adapter.addIds);
+  setText: actions.setEntityProperty('text'),
 
-  setText = this.setEntityProperty('text');
-
-  addAnswer = this.entityAction('add-answer', normalizeAnswer, (question, answer) => {
+  addAnswer: actions.entityAction('add-answer', normalizeAnswer, (question, answer) => {
     question.answers.push(answer.id);
-  });
+  }),
 
-  toggleAnswer = toggleAnswer;
-}
+  toggleAnswer,
+};
 
-export const questionActions = new QuestionActions();
+export const questionReducer = actions.reducer();

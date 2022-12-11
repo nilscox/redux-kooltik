@@ -9,15 +9,11 @@ type User = {
   name: string;
 };
 
-class BaseUserActions extends EntityActions<User> {
-  protected adapter = new EntityAdapter<User>((user) => user.id);
-
-  constructor() {
-    super('user');
-  }
-}
-
 describe('EntityActions', () => {
+  let actions: EntityActions<User>;
+
+  const adapter = new EntityAdapter<User>((user) => user.id);
+
   const state: EntitiesState<User> = {
     ids: ['1'],
     entities: {
@@ -25,23 +21,24 @@ describe('EntityActions', () => {
     },
   };
 
+  beforeEach(() => {
+    actions = new EntityActions<User>('user');
+  });
+
   it('creates an action targeting a specific entity', () => {
-    class UserActions extends BaseUserActions {
-      setName = this.entityAction('set-name', (user: User, name: string) => {
-        user.name = name;
-      });
-    }
+    const setName = actions.entityAction('set-name', (user: User, name: string) => {
+      user.name = name;
+    });
 
-    const userActions = new UserActions();
-    const reducer = userActions.reducer();
+    const reducer = actions.reducer();
 
-    expect(userActions.setName('1', 'jan')).toEqual({
+    expect(setName('1', 'jan')).toEqual({
       type: 'user/set-name',
       entityId: '1',
       payload: 'jan',
     });
 
-    expect(reducer(state, userActions.setName('1', 'jan'))).toEqual({
+    expect(reducer(state, setName('1', 'jan'))).toEqual({
       ids: ['1'],
       entities: {
         '1': { id: '1', name: 'jan' },
@@ -50,20 +47,16 @@ describe('EntityActions', () => {
   });
 
   it('creates an action using the setEntityProperty helper', () => {
-    class UserActions extends BaseUserActions {
-      setName = this.setEntityProperty('name');
-    }
+    const setName = actions.setEntityProperty('name');
+    const reducer = actions.reducer();
 
-    const userActions = new UserActions();
-    const reducer = userActions.reducer();
-
-    expect(userActions.setName('1', 'jan')).toEqual({
+    expect(setName('1', 'jan')).toEqual({
       type: 'user/set-name',
       entityId: '1',
       payload: 'jan',
     });
 
-    expect(reducer(state, userActions.setName('1', 'jan'))).toEqual({
+    expect(reducer(state, setName('1', 'jan'))).toEqual({
       ids: ['1'],
       entities: {
         '1': { id: '1', name: 'jan' },
@@ -72,19 +65,15 @@ describe('EntityActions', () => {
   });
 
   it('creates an action using the setEntitiesProperty helper', () => {
-    class UserActions extends BaseUserActions {
-      setAllNames = this.setEntitiesProperty('name');
-    }
+    const setAllNames = actions.setEntitiesProperty('name');
+    const reducer = actions.reducer();
 
-    const userActions = new UserActions();
-    const reducer = userActions.reducer();
-
-    expect(userActions.setAllNames('jan')).toEqual({
+    expect(setAllNames('jan')).toEqual({
       type: 'user/set-all-name',
       payload: 'jan',
     });
 
-    expect(reducer(state, userActions.setAllNames('jan'))).toEqual({
+    expect(reducer(state, setAllNames('jan'))).toEqual({
       ids: ['1'],
       entities: {
         '1': { id: '1', name: 'jan' },
@@ -93,59 +82,37 @@ describe('EntityActions', () => {
   });
 
   it('creates an action on an extra property', () => {
-    class UserActions extends EntityActions<User, { fetching: boolean }> {
-      constructor() {
-        super('user', { fetching: false });
-      }
+    const actions = new EntityActions<User, { fetching: boolean }>('user', { fetching: false });
+    const setFetching = actions.setProperty('fetching');
+    const reducer = actions.reducer();
 
-      setFetching = this.setProperty('fetching');
-    }
-
-    const userActions = new UserActions();
-    const reducer = userActions.reducer();
-
-    expect(userActions.setFetching(true)).toEqual({
+    expect(setFetching(true)).toEqual({
       type: 'user/set-fetching',
       payload: true,
     });
 
-    expect(reducer({ ...state, fetching: false }, userActions.setFetching(true))).toEqual({
+    expect(reducer({ ...state, fetching: false }, setFetching(true))).toEqual({
       ...state,
       fetching: true,
     });
   });
 
   it('initial extra properties typings ', () => {
-    class WithoutExtraProperties extends EntityActions<User> {
-      constructor() {
-        // @ts-expect-error unexpected initial properties
-        super('user', { fetching: false });
-      }
-    }
+    // @ts-expect-error unexpected initial properties
+    new EntityActions<User>('user', { fetching: false });
 
-    class WithExtraProperties extends EntityActions<User, { fetching: boolean }> {
-      constructor() {
-        // @ts-expect-error missing initial properties
-        super('user');
-      }
-    }
-
-    WithoutExtraProperties;
-    WithExtraProperties;
+    // @ts-expect-error missing initial properties
+    new EntityActions<User, { fetching: boolean }>('user');
   });
 
   it('dispatches and selects using a redux store', () => {
-    class UserActions extends BaseUserActions {
-      addUser = this.action('add-user', this.adapter.addOne);
-      setName = this.setEntityProperty('name');
-    }
+    const addUser = actions.action('add-user', adapter.addOne);
+    const setName = actions.setEntityProperty('name');
 
-    const userActions = new UserActions();
+    const store = createTestStore(actions.reducer());
 
-    const store = createTestStore(userActions.reducer());
-
-    store.dispatch(userActions.addUser({ id: '1', name: 'tom' }));
-    store.dispatch(userActions.setName('1', 'jan'));
+    store.dispatch(addUser({ id: '1', name: 'tom' }));
+    store.dispatch(setName('1', 'jan'));
 
     expect(store.getState()).toEqual({
       ids: ['1'],

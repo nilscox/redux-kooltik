@@ -16,16 +16,12 @@ export const createAnswer = (text: string): Answer => ({
   selected: false,
 });
 
-class AnswerActions extends EntityActions<NormalizedAnswer> {
-  private adapter = new EntityAdapter<NormalizedAnswer>((answer) => answer.id);
+const adapter = new EntityAdapter<NormalizedAnswer>((answer) => answer.id);
+const actions = new EntityActions<NormalizedAnswer>('answer');
 
-  constructor() {
-    super('answer');
-  }
+export const answerActions = {
+  setAnswers: actions.action('set-answers', adapter.setMany),
+  setSelected: actions.setEntityProperty('selected'),
+};
 
-  setAnswers = this.action('set-answers', this.adapter.setMany);
-
-  setSelected = this.setEntityProperty('selected');
-}
-
-export const answerActions = new AnswerActions();
+export const answerReducer = actions.reducer();

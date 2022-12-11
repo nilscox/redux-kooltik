@@ -4,10 +4,8 @@ import { AppState } from '../store';
 
 import { User } from './user.actions';
 
-export class UserSelectors extends Selectors<AppState, User> {
-  constructor() {
-    super((state: AppState) => state.user);
-  }
+const selectors = new Selectors<AppState, User>((state: AppState) => state.user);
 
-  selectName = this.propertySelector('name');
-}
+export const userSelectors = {
+  selectName: selectors.property('name'),
+};

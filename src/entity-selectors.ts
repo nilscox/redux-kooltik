@@ -15,11 +15,11 @@ export class EntitySelectors<RootState, Entity, ExtraProperties = unknown> exten
   }
 
   entitiesSelector() {
-    return this.createSelector((state) => state.entities);
+    return this.selector((state) => state.entities);
   }
 
   idsSelector() {
-    return this.createSelector((state) => state.ids);
+    return this.selector((state) => state.ids);
   }
 
   entitySelector() {

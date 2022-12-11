@@ -11,38 +11,32 @@ type State = {
   user: User;
 };
 
-class UserSelectors extends Selectors<State, User> {
-  constructor() {
-    super((state: State) => state.user);
-  }
-
-  selectUser = this.stateSelector();
-
-  selectNameUppercase = this.createSelector((user) => {
-    return user.name.toUpperCase();
-  });
-
-  selectAge = this.propertySelector('age');
-}
-
 describe('Selectors', () => {
-  let userSelectors: UserSelectors;
+  let selectors: Selectors<State, User>;
   let state: State;
 
   beforeEach(() => {
-    userSelectors = new UserSelectors();
+    selectors = new Selectors<State, User>((state) => state.user);
     state = { user: { name: 'tom', age: 22 } };
   });
 
   it('creates a selector to retrieve the whole state', () => {
-    expect(userSelectors.selectUser(state)).toEqual({ name: 'tom', age: 22 });
+    const selectUser = selectors.state();
+
+    expect(selectUser(state)).toEqual({ name: 'tom', age: 22 });
   });
 
   it('creates a selector computing a derived state', () => {
-    expect(userSelectors.selectNameUppercase(state)).toEqual('TOM');
+    const selectNameUppercase = selectors.selector((user) => {
+      return user.name.toUpperCase();
+    });
+
+    expect(selectNameUppercase(state)).toEqual('TOM');
   });
 
   it('creates a selector using the propertySelector helper', () => {
-    expect(userSelectors.selectAge(state)).toEqual(22);
+    const selectAge = selectors.property('age');
+
+    expect(selectAge(state)).toEqual(22);
   });
 });

@@ -39,23 +39,20 @@ export class Actions<State> {
     return `${this.name}/${type}`;
   }
 
-  protected action<Extra = unknown>(
-    type: string,
-    reducer: ImmerReducer<State, Action<Extra>>
-  ): ActionCreator<Extra>;
+  action<Extra = unknown>(type: string, reducer: ImmerReducer<State, Action<Extra>>): ActionCreator<Extra>;
 
-  protected action<Payload, Extra = unknown>(
+  action<Payload, Extra = unknown>(
     type: string,
     reducer: PayloadImmerReducer<State, Payload, PayloadAction<Payload, Extra>>
   ): PayloadActionCreator<Payload, Extra>;
 
-  protected action<Payload, TransformedPayload, Extra = unknown>(
+  action<Payload, TransformedPayload, Extra = unknown>(
     type: string,
     transformer: (this: Extra, payload: Payload) => TransformedPayload,
     reducer: PayloadImmerReducer<State, TransformedPayload, PayloadAction<Payload, Extra>>
   ): PayloadActionCreator<Payload, Extra, TransformedPayload>;
 
-  protected action(type: string, arg1: unknown, arg2?: unknown) {
+  action(type: string, arg1: unknown, arg2?: unknown) {
     const [reducer, transformer] =
       arg2 === undefined
         ? [arg1 as PayloadImmerReducer<State, unknown>, (payload: unknown) => payload]
@@ -85,19 +82,19 @@ export class Actions<State> {
     return actionCreator;
   }
 
-  protected propertyAction<Property extends keyof State>(
+  propertyAction<Property extends keyof State>(
     property: Property,
     type: string,
     reducer: ImmerReducer<State[Property]>
   ): ActionCreator;
 
-  protected propertyAction<Property extends keyof State, Payload>(
+  propertyAction<Property extends keyof State, Payload>(
     property: Property,
     type: string,
     reducer: PayloadImmerReducer<State[Property], Payload>
   ): PayloadActionCreator<Payload>;
 
-  protected propertyAction<Property extends keyof State, Payload>(
+  propertyAction<Property extends keyof State, Payload>(
     property: Property,
     type: string,
     reducer: ImmerReducer<State[Property]> | PayloadImmerReducer<State[Property], Payload>
@@ -111,22 +108,22 @@ export class Actions<State> {
     });
   }
 
-  protected set(type = 'set') {
+  set(type = 'set') {
     return this.action(type, (_state: State, value: State) => value);
   }
 
-  protected setProperty<Property extends keyof State>(property: Property, type = `set-${String(property)}`) {
+  setProperty<Property extends keyof State>(property: Property, type = `set-${String(property)}`) {
     return this.propertyAction(property, type, (_: State[Property], value: State[Property]) => value);
   }
 
-  protected subscribe(actionCreator: ActionCreator, reducer: ImmerReducer<State>): void;
+  subscribe(actionCreator: ActionCreator, reducer: ImmerReducer<State>): void;
 
-  protected subscribe<Payload>(
+  subscribe<Payload>(
     actionCreator: PayloadActionCreator<Payload>,
     reducer: PayloadImmerReducer<State, Partial<Payload>>
   ): void;
 
-  protected subscribe<Payload>(
+  subscribe<Payload>(
     actionCreator: ActionCreator<Payload> | PayloadActionCreator<Payload>,
     reducer: ImmerReducer<State> | PayloadImmerReducer<State, Partial<Payload>>
   ) {

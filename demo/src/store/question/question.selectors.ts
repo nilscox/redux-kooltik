@@ -6,33 +6,31 @@ import { AppState } from '../store';
 
 import { NormalizedQuestion, Question } from './question.actions';
 
-export class QuestionSelectors extends EntitySelectors<AppState, NormalizedQuestion> {
-  protected schema = questionSchema;
+const selectors = new EntitySelectors<AppState, NormalizedQuestion>('question', (state) => state.questions);
 
-  constructor() {
-    super('question', (state) => state.questions);
-  }
+const selectAllNormalized = selectors.entitiesSelector();
+const byId = normalizationSelectors.createEntitySelector<Question>('question', questionSchema);
 
-  selectQuestion = normalizationSelectors.createEntitySelector<Question>('question', questionSchema);
+export const questionSelectors = {
+  byId,
 
-  selectText = this.entityPropertySelector('text');
+  text: selectors.entityPropertySelector('text'),
 
-  selectAnswers = createSelector(this.selectQuestion, (question) => question.answers);
+  answers: createSelector(byId, (question) => question.answers),
 
-  selectSelectedAnswers = createSelector(this.selectAnswers, (answers) =>
-    answers.filter((answer) => answer.selected)
-  );
+  selectedAnswers() {
+    return createSelector(this.answers, (answers) => answers.filter((answer) => answer.selected));
+  },
 
-  selectQuestions = this.entitiesSelector();
-  selectQuestionIdFromAnswerId = createSelector(
-    [this.selectQuestions, (questions, answerId: string) => answerId],
-    (questions, answerId) =>
-      Object.values(questions).find((question) => question?.answers?.includes(answerId))?.id
-  );
+  questionIdFromAnswerId: createSelector(
+    [selectAllNormalized, (state, answerId: string) => answerId],
+    (questions, answerId) => {
+      const question = Object.values(questions).find((question) => question.answers.includes(answerId));
+      return question?.id;
+    }
+  ),
 
-  selectHasSelectedAnswer = createSelector(this.selectQuestion, (question) => {
+  hasSelectedAnswer: createSelector(byId, (question) => {
     return question.answers.some(({ selected }) => selected);
-  });
-}
-
-export const questionSelectors = new QuestionSelectors();
+  }),
+};

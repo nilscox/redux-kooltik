@@ -26,20 +26,20 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     super(name, EntityAdapter.initialState(initialExtraProperties) as T);
   }
 
-  protected entityAction(type: string, reducer: ImmerReducer<Entity>): EntityActionCreator;
+  entityAction(type: string, reducer: ImmerReducer<Entity>): EntityActionCreator;
 
-  protected entityAction<Payload>(
+  entityAction<Payload>(
     type: string,
     reducer: PayloadImmerReducer<Entity, Payload>
   ): PayloadEntityActionCreator<Payload>;
 
-  protected entityAction<Payload, TransformedPayload>(
+  entityAction<Payload, TransformedPayload>(
     type: string,
     transformer: (payload: Payload) => TransformedPayload,
     reducer: PayloadImmerReducer<Entity, TransformedPayload>
   ): PayloadEntityActionCreator<Payload, TransformedPayload>;
 
-  protected entityAction(type: string, arg1: unknown, arg2?: unknown) {
+  entityAction(type: string, arg1: unknown, arg2?: unknown) {
     const [reducer, transformer] =
       arg2 === undefined
         ? [arg1 as PayloadImmerReducer<Entity, unknown>, (payload: unknown) => payload]
@@ -72,7 +72,7 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     };
   }
 
-  protected setEntityProperty<Property extends keyof Entity>(
+  setEntityProperty<Property extends keyof Entity>(
     property: Property,
     type = `set-${String(property)}`
   ): PayloadEntityActionCreator<Entity[Property]> {
@@ -81,7 +81,7 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     });
   }
 
-  protected setEntitiesProperty<Property extends keyof Entity>(
+  setEntitiesProperty<Property extends keyof Entity>(
     property: Property,
     type = `set-all-${String(property)}`
   ): PayloadActionCreator<Entity[Property]> {

@@ -26,7 +26,7 @@ describe('SurveyActions', () => {
       const content = createContent('');
       store.dispatch(surveyActions.addStep(survey.id, content));
 
-      expect(store.select(surveySelectors.selectTotalSteps, survey.id)).toEqual(1);
+      expect(store.select(surveySelectors.totalSteps, survey.id)).toEqual(1);
     });
   });
 
@@ -36,15 +36,15 @@ describe('SurveyActions', () => {
 
       store.dispatch(surveyActions.addStep(survey.id, content));
 
-      expect(store.select(surveySelectors.selectStep, survey.id, content.id)).toEqual(content);
+      expect(store.select(surveySelectors.step, survey.id, content.id)).toEqual(content);
     });
 
     it("returns a survey's step index from its id", () => {
       const [content1, content2] = array(2, () => createContent(''));
       store.dispatch(surveyActions.addSteps(survey.id, [content1, content2]));
 
-      expect(store.select(surveySelectors.selectStepIndex, survey.id, content1.id)).toEqual(0);
-      expect(store.select(surveySelectors.selectStepIndex, survey.id, content2.id)).toEqual(1);
+      expect(store.select(surveySelectors.stepIndex, survey.id, content1.id)).toEqual(0);
+      expect(store.select(surveySelectors.stepIndex, survey.id, content2.id)).toEqual(1);
     });
   });
 
@@ -58,11 +58,11 @@ describe('SurveyActions', () => {
     });
 
     it('returns false when the current step is the first one', () => {
-      expect(store.select(surveySelectors.selectCanGoPrevious, survey.id, content1.id)).toBe(false);
+      expect(store.select(surveySelectors.canGoPrevious, survey.id, content1.id)).toBe(false);
     });
 
     it('returns true when the current step is not the first one', () => {
-      expect(store.select(surveySelectors.selectCanGoPrevious, survey.id, content2.id)).toBe(true);
+      expect(store.select(surveySelectors.canGoPrevious, survey.id, content2.id)).toBe(true);
     });
   });
 
@@ -76,11 +76,11 @@ describe('SurveyActions', () => {
     });
 
     it('returns true when the current step is not the last one', () => {
-      expect(store.select(surveySelectors.selectCanGoNext, survey.id, content1.id)).toBe(true);
+      expect(store.select(surveySelectors.canGoNext, survey.id, content1.id)).toBe(true);
     });
 
     it('returns false when the current step is the last one', () => {
-      expect(store.select(surveySelectors.selectCanGoNext, survey.id, content2.id)).toBe(false);
+      expect(store.select(surveySelectors.canGoNext, survey.id, content2.id)).toBe(false);
     });
 
     it('returns false when the current question has not been answered', () => {
@@ -89,7 +89,7 @@ describe('SurveyActions', () => {
       store.dispatch(surveyActions.addSurvey(survey));
       store.dispatch(surveyActions.addSteps(survey.id, [question, createContent('')]));
 
-      expect(store.select(surveySelectors.selectCanGoNext, survey.id, question.id)).toBe(false);
+      expect(store.select(surveySelectors.canGoNext, survey.id, question.id)).toBe(false);
     });
 
     it('returns true when the current question has been answered', () => {
@@ -99,7 +99,7 @@ describe('SurveyActions', () => {
       store.dispatch(surveyActions.addSteps(survey.id, [question, createContent('')]));
       store.dispatch(answerActions.setSelected(question.answers[0].id, true));
 
-      expect(store.select(surveySelectors.selectCanGoNext, survey.id, question.id)).toBe(true);
+      expect(store.select(surveySelectors.canGoNext, survey.id, question.id)).toBe(true);
     });
 
     it('returns false when the current rating has not been answered', () => {
@@ -108,7 +108,7 @@ describe('SurveyActions', () => {
       store.dispatch(surveyActions.addSurvey(survey));
       store.dispatch(surveyActions.addSteps(survey.id, [rating, createContent('')]));
 
-      expect(store.select(surveySelectors.selectCanGoNext, survey.id, rating.id)).toBe(false);
+      expect(store.select(surveySelectors.canGoNext, survey.id, rating.id)).toBe(false);
     });
 
     it('returns true when the current rating has been answered', () => {
@@ -118,7 +118,7 @@ describe('SurveyActions', () => {
       store.dispatch(surveyActions.addSteps(survey.id, [rating, createContent('')]));
       store.dispatch(ratingActions.setValue(rating.id, 1));
 
-      expect(store.select(surveySelectors.selectCanGoNext, survey.id, rating.id)).toBe(true);
+      expect(store.select(surveySelectors.canGoNext, survey.id, rating.id)).toBe(true);
     });
   });
 });

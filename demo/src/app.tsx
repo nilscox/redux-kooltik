@@ -27,7 +27,7 @@ export const useAppDispatch = () => {
 };
 
 export const App = () => {
-  const survey = useAppSelector(surveySelectors.selectSurvey, 'id');
+  const survey = useAppSelector(surveySelectors.byId, 'id');
   const [stepIndex, setStepIndex] = useState(0);
   const step = survey.steps[stepIndex];
 
@@ -55,8 +55,6 @@ export const App = () => {
   );
 };
 
-const { selectStepIndex, selectTotalSteps, selectCanGoPrevious, selectCanGoNext } = surveySelectors;
-
 type NavigationProps = {
   stepId: string;
   prev: () => void;
@@ -64,11 +62,11 @@ type NavigationProps = {
 };
 
 const Navigation = ({ stepId, prev, next }: NavigationProps) => {
-  const index = useAppSelector(selectStepIndex, 'id', stepId);
-  const total = useAppSelector(selectTotalSteps, 'id');
+  const index = useAppSelector(surveySelectors.stepIndex, 'id', stepId);
+  const total = useAppSelector(surveySelectors.totalSteps, 'id');
 
-  const canGoPrev = useAppSelector(selectCanGoPrevious, 'id', stepId);
-  const canGoNext = useAppSelector(selectCanGoNext, 'id', stepId);
+  const canGoPrev = useAppSelector(surveySelectors.canGoPrevious, 'id', stepId);
+  const canGoNext = useAppSelector(surveySelectors.canGoNext, 'id', stepId);
 
   return (
     <div className="row items-center justify-between">
@@ -110,7 +108,7 @@ type ContentProps = {
 };
 
 const Content = ({ id }: ContentProps) => {
-  const text = useAppSelector(contentSelectors.selectText, id);
+  const text = useAppSelector(contentSelectors.text, id);
 
   return (
     <div className="col h-full items-center justify-center">
@@ -124,8 +122,8 @@ type QuestionProps = {
 };
 
 const Question = ({ id }: QuestionProps) => {
-  const text = useAppSelector(questionSelectors.selectText, id);
-  const answers = useAppSelector(questionSelectors.selectAnswers, id);
+  const text = useAppSelector(questionSelectors.text, id);
+  const answers = useAppSelector(questionSelectors.answers, id);
 
   return (
     <div>
@@ -144,8 +142,8 @@ type AnswerProps = {
 const Answer = ({ id }: AnswerProps) => {
   const dispatch = useAppDispatch();
 
-  const text = useAppSelector(answerSelectors.selectText, id);
-  const selected = useAppSelector(answerSelectors.selectIsSelected, id);
+  const text = useAppSelector(answerSelectors.text, id);
+  const selected = useAppSelector(answerSelectors.isSelected, id);
 
   return (
     <div key={id} className="text-xl">
@@ -172,9 +170,9 @@ type RatingProps = {
 const Rating = ({ id }: RatingProps) => {
   const dispatch = useAppDispatch();
 
-  const text = useAppSelector(ratingSelectors.selectText, id);
-  const max = useAppSelector(ratingSelectors.selectMax, id);
-  const value = useAppSelector(ratingSelectors.selectValue, id);
+  const text = useAppSelector(ratingSelectors.text, id);
+  const max = useAppSelector(ratingSelectors.max, id);
+  const value = useAppSelector(ratingSelectors.value.unsafe, id);
 
   const [mouseOver, setMouseOver] = useState<number>();
 
@@ -187,7 +185,7 @@ const Rating = ({ id }: RatingProps) => {
       }
     }
 
-    if (value) {
+    if (value !== undefined) {
       if (idx < value) {
         return 'text-yellow-500';
       }

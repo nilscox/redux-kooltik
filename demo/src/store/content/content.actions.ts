@@ -20,19 +20,16 @@ export const createContent = (text: string): Content => ({
   validated: false,
 });
 
-class ContentActions extends EntityActions<NormalizedContent> {
-  private adapter = new EntityAdapter<NormalizedContent>((content) => content.id);
+const adapter = new EntityAdapter<NormalizedContent>((content) => content.id);
+const actions = new EntityActions<NormalizedContent>('content');
 
-  constructor() {
-    super('content');
-  }
+export const contentActions = {
+  setContents: actions.action('set-contents', adapter.setMany),
 
-  setContents = this.action('set-contents', this.adapter.setMany);
+  addContent: actions.action('add-content', normalizeContent, adapter.addId),
+  addContents: actions.action('add-contents', normalizeContents, adapter.addIds),
 
-  addContent = this.action('add-content', normalizeContent, this.adapter.addId);
-  addContents = this.action('add-contents', normalizeContents, this.adapter.addIds);
+  setText: actions.setEntityProperty('text'),
+};
 
-  setText = this.setEntityProperty('text');
-}
-
-export const contentActions = new ContentActions();
+export const contentReducer = actions.reducer();

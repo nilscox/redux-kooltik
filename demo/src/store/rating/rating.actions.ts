@@ -23,20 +23,17 @@ export const createRating = (text: string, max: number): Rating => ({
   validated: false,
 });
 
-class RatingActions extends EntityActions<NormalizedRating> {
-  private adapter = new EntityAdapter<NormalizedRating>((rating) => rating.id);
+const adapter = new EntityAdapter<NormalizedRating>((rating) => rating.id);
+const actions = new EntityActions<NormalizedRating>('rating');
 
-  constructor() {
-    super('rating');
-  }
+export const ratingActions = {
+  setRatings: actions.action('set-ratings', adapter.setMany),
 
-  setRatings = this.action('set-ratings', this.adapter.setMany);
+  addRating: actions.action('add-rating', normalizeRating, adapter.addId),
+  addRatings: actions.action('add-ratings', normalizeRatings, adapter.addIds),
 
-  addRating = this.action('add-rating', normalizeRating, this.adapter.addId);
-  addRatings = this.action('add-ratings', normalizeRatings, this.adapter.addIds);
+  setText: actions.setEntityProperty('text'),
+  setValue: actions.setEntityProperty('value'),
+};
 
-  setText = this.setEntityProperty('text');
-  setValue = this.setEntityProperty('value');
-}
-
-export const ratingActions = new RatingActions();
+export const ratingReducer = actions.reducer();
