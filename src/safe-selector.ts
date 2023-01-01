@@ -1,6 +1,6 @@
 export interface SafeSelector<Params extends unknown[], Result> {
   (...params: Params): Result;
-  unsafe(...params: Params): Result | undefined;
+  unsafe(this: void, ...params: Params): Result | undefined;
 }
 
 export const createSafeSelector = <Params extends unknown[], Result>(
