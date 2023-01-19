@@ -1,5 +1,5 @@
 import { Selector } from './actions';
-import { EntitiesState } from './entity-adapter';
+import { EntitiesState } from './entity-actions';
 import { createSafeSelector } from './safe-selector';
 import { Selectors } from './selectors';
 

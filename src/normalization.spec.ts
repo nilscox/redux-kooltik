@@ -43,7 +43,7 @@ describe('normalization', () => {
 
     setUsers = this.action('set-users', this.adapter.setMany);
 
-    addUser = this.action('add-user', normalizeUser, this.adapter.addId);
+    addUser = this.action('add-user', normalizeUser, () => {});
 
     addFriend = this.entityAction('add-friend', normalizeUser, (user, friend) => {
       user.friends.push(friend.name);
@@ -59,7 +59,7 @@ describe('normalization', () => {
 
     setPosts = this.action('set-posts', this.adapter.setMany);
 
-    addPost = this.action('add-post', normalizePost, this.adapter.addId);
+    addPost = this.action('add-post', normalizePost, () => {});
 
     setAuthor = this.entityAction('set-author', normalizeUser, (post, author) => {
       post.author = author.name;

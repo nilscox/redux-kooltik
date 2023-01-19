@@ -1,12 +1,12 @@
 import {
-  PayloadImmerReducer,
-  PayloadAction,
+  Action,
   Actions,
   ImmerReducer,
-  Action,
+  PayloadAction,
   PayloadActionCreator,
+  PayloadImmerReducer,
 } from './actions';
-import { EntitiesState, EntityAdapter } from './entity-adapter';
+import { Entities } from './entity-adapter';
 
 type EntityActionCreator = (id: string) => Action<{ entityId: string }>;
 
@@ -15,15 +15,17 @@ type PayloadEntityActionCreator<Payload, TransformedPayload = Payload> = (
   payload: Payload
 ) => PayloadAction<TransformedPayload, { entityId: string }>;
 
+export type EntitiesState<Entity, ExtraProperties = undefined> = Entities<Entity> &
+  (ExtraProperties extends undefined ? unknown : ExtraProperties);
+
 export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
-  EntitiesState<Entity, ExtraProperties extends undefined ? unknown : ExtraProperties>
+  EntitiesState<Entity, ExtraProperties>
 > {
   constructor(
     name: string,
     ...[initialExtraProperties]: ExtraProperties extends undefined ? [] : [ExtraProperties]
   ) {
-    type T = EntitiesState<Entity, ExtraProperties extends undefined ? unknown : ExtraProperties>;
-    super(name, EntityAdapter.initialState(initialExtraProperties) as T);
+    super(name, { entities: {}, ...initialExtraProperties } as EntitiesState<Entity, ExtraProperties>);
   }
 
   entityAction(type: string, reducer: ImmerReducer<Entity>): EntityActionCreator;
@@ -85,8 +87,8 @@ export class EntityActions<Entity, ExtraProperties = undefined> extends Actions<
     property: Property,
     type = `set-all-${String(property)}`
   ): PayloadActionCreator<Entity[Property]> {
-    return this.action(type, (state: EntitiesState<Entity>, value: Entity[Property]) => {
-      Object.values(state.entities).forEach((entity) => {
+    return this.action(type, ({ entities }: EntitiesState<Entity>, value: Entity[Property]) => {
+      Object.values(entities).forEach((entity) => {
         entity[property] = value;
       });
     });

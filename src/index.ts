@@ -1,4 +1,4 @@
-export { EntityAdapter, type EntitiesState } from './entity-adapter';
+export { EntityAdapter, type Entities } from './entity-adapter';
 export { EntitySelectors } from './entity-selectors';
 export { EntityActions } from './entity-actions';
 export { createNormalizationMiddleware } from './normalization-middleware';

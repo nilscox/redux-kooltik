@@ -1,7 +1,7 @@
 import expect from '@nilscox/expect';
 
-import { EntityActions } from './entity-actions';
-import { EntitiesState, EntityAdapter } from './entity-adapter';
+import { EntitiesState, EntityActions } from './entity-actions';
+import { EntityAdapter } from './entity-adapter';
 import { createTestStore } from './test-store';
 
 type User = {
@@ -9,17 +9,16 @@ type User = {
   name: string;
 };
 
+const users = (users: User[]): EntitiesState<User> => {
+  return {
+    entities: users.reduce((obj, user) => ({ ...obj, [user.id]: user }), {}),
+  };
+};
+
 describe('EntityActions', () => {
   let actions: EntityActions<User>;
 
-  const adapter = new EntityAdapter<User>((user) => user.id);
-
-  const state: EntitiesState<User> = {
-    ids: ['1'],
-    entities: {
-      '1': { id: '1', name: 'tom' },
-    },
-  };
+  const state = users([{ id: '1', name: 'tom' }]);
 
   beforeEach(() => {
     actions = new EntityActions<User>('user');
@@ -38,12 +37,7 @@ describe('EntityActions', () => {
       payload: 'jan',
     });
 
-    expect(reducer(state, setName('1', 'jan'))).toEqual({
-      ids: ['1'],
-      entities: {
-        '1': { id: '1', name: 'jan' },
-      },
-    });
+    expect(reducer(state, setName('1', 'jan'))).toEqual(users([{ id: '1', name: 'jan' }]));
   });
 
   it('creates an action using the setEntityProperty helper', () => {
@@ -56,12 +50,7 @@ describe('EntityActions', () => {
       payload: 'jan',
     });
 
-    expect(reducer(state, setName('1', 'jan'))).toEqual({
-      ids: ['1'],
-      entities: {
-        '1': { id: '1', name: 'jan' },
-      },
-    });
+    expect(reducer(state, setName('1', 'jan'))).toEqual(users([{ id: '1', name: 'jan' }]));
   });
 
   it('creates an action using the setEntitiesProperty helper', () => {
@@ -73,12 +62,7 @@ describe('EntityActions', () => {
       payload: 'jan',
     });
 
-    expect(reducer(state, setAllNames('jan'))).toEqual({
-      ids: ['1'],
-      entities: {
-        '1': { id: '1', name: 'jan' },
-      },
-    });
+    expect(reducer(state, setAllNames('jan'))).toEqual(users([{ id: '1', name: 'jan' }]));
   });
 
   it('creates an action on an extra property', () => {
@@ -106,19 +90,16 @@ describe('EntityActions', () => {
   });
 
   it('dispatches and selects using a redux store', () => {
-    const addUser = actions.action('add-user', adapter.addOne);
+    const adapter = new EntityAdapter<User>((user) => user.id);
+
+    const setUser = actions.action('add-user', adapter.setOne);
     const setName = actions.setEntityProperty('name');
 
     const store = createTestStore(actions.reducer());
 
-    store.dispatch(addUser({ id: '1', name: 'tom' }));
+    store.dispatch(setUser({ id: '1', name: 'tom' }));
     store.dispatch(setName('1', 'jan'));
 
-    expect(store.getState()).toEqual({
-      ids: ['1'],
-      entities: {
-        '1': { id: '1', name: 'jan' },
-      },
-    });
+    expect(store.getState()).toEqual(users([{ id: '1', name: 'jan' }]));
   });
 });
