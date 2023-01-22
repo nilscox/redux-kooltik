@@ -1,6 +1,6 @@
 {
   "name": "@nilscox/redux-kooltik",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "Beerware",
   "type": "module",
   "main": "dist/index.cjs.js",
@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c",
     "test": "mocha",
     "lint": "eslint src"
   },
